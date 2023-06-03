@@ -12,3 +12,19 @@ The application consists of two main pages:
 The project incorporates several libraries to enhance development and user experience:
 
 React, Material-UI, MobX, Testing Library, Jest
+
+## Getting Started
+To run the project locally and start the development server, follow these steps:
+
+1. Clone the repository to your local machine.
+2. Open a terminal and navigate to the project directory.
+3. Run `npm install` to install the project dependencies.
+4. After the installation is complete, run `npm run start` to start the development server.
+5. Open your web browser and go to `http://localhost:3000` to view the application.
+
+## Available Scripts
+In the project directory, you can run the following commands:
+
+`npm run start`: Starts the development server and runs the application in the development mode. Open `http://localhost:3000` to view it in the browser.
+
+`npm run test`: Launches the test runner and executes all the tests in the project.
