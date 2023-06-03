@@ -1,77 +1,106 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CircularProgress, Grid, TextField, Typography } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  CircularProgress,
+  Container,
+  Grid,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { Character } from '../types/characters';
 import { useDebounce } from '../common/hooks/useDebounce';
+import { usePrev } from '../common/hooks/usePrev';
 
 export function CharactersList() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery);
+  const prevSearchQuery = usePrev(debouncedSearchQuery);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [listCompeleted, setListCompleted] = useState(false);
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  const listCompeleted = useRef(false);
+  const [reqParams, setReqParams] = useState('');
+  const observer = useRef<IntersectionObserver | null>(null);
 
   const loadCharacters = useCallback(async () => {
+    if (!reqParams) {
+      return;
+    }
     setIsLoading(true);
 
     try {
-      const response = await fetch(`https://swapi.dev/api/people?page=${page}`);
+      const response = await fetch(`https://swapi.dev/api/people?${reqParams}`);
       const data = await response.json();
       if (!data.next) {
-        setListCompleted(true);
+        listCompeleted.current = true;
       }
-
-      setCharacters((prevCharacters) => [...prevCharacters, ...data.results]);
+      if (data.results) {
+        setCharacters((prevCharacters) => [...prevCharacters, ...data.results]);
+      }
     } catch (error) {
       console.log('Error loading characters:', error);
     }
 
     setIsLoading(false);
-  },                                 [page]);
+  },                                 [reqParams]);
+
+  useEffect(() => {
+    if (debouncedSearchQuery !== prevSearchQuery) {
+      listCompeleted.current = false;
+
+      setCharacters([]);
+      setPage(1);
+      return;
+    }
+    setReqParams(`page=${page}&search=${debouncedSearchQuery}`);
+  },        [debouncedSearchQuery, prevSearchQuery, page]);
 
   useEffect(() => {
     loadCharacters();
   },        [loadCharacters]);
 
-  useEffect(() => {
-    observerRef.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        setPage((prevPage) => prevPage + 1);
-      }
-    });
-
-    if (observerRef.current) {
-      observerRef.current.observe(document.getElementById('observer')!);
+  const observerRef = useCallback((node: HTMLDivElement) => {
+    if (!observer.current) {
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && !listCompeleted.current) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      });
     }
 
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  },        []);
+    if (node !== null) {
+      observer.current.observe(node);
+    } else {
+      observer.current.disconnect();
+    }
+  },                              []);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
 
-  const filteredCharacters = useMemo(() => characters.filter((character) =>
-    character.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-  ),                                 [characters, debouncedSearchQuery]);
-
   return (
-    <div>
+    <Container>
       <TextField
         label="Search"
         value={searchQuery}
         onChange={handleSearchChange}
+        sx={{ m: 2 }}
       />
-      <Grid container={true} spacing={2} justifyContent={'center'}>
-        {filteredCharacters.map((character) => (
+      {!!characters.length && <Grid container={true} spacing={2}>
+        {characters.map((character, index) => (
           <Grid item={true} xs={12} sm={6} md={4} key={character.name}>
-            <Link to={`/character/${character.name}`} style={{ textDecoration: 'none' }}>
+            <Link
+              to={`/character/${character.name}`}
+              style={{ textDecoration: 'none' }}
+            >
               <Card>
                 <CardContent>
                   <Typography variant="h5" component="h2">
@@ -80,12 +109,19 @@ export function CharactersList() {
                 </CardContent>
               </Card>
             </Link>
+            {index === characters.length - 1 && <div ref={observerRef} />}
           </Grid>
         ))}
-        {!listCompeleted && <div id="observer" />}
-        {isLoading && <CircularProgress sx={{ m: 1 }} />}          
+      </Grid>}
+      <Grid container={true} justifyContent={'center'}>
+        {!characters.length && !isLoading && (
+          <Typography variant="h5" component="h2">
+            Empty
+          </Typography>
+        )}
+        {isLoading && <CircularProgress sx={{ m: 2 }} />}
       </Grid>
-    </div>
+    </Container>
   );
 }
 
