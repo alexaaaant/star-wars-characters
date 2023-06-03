@@ -31,7 +31,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = observer(
                 </CardContent>
               </Card>
             </Link>
-            {observerRef && <div ref={observerRef} />}
+            {observerRef && <div ref={observerRef} data-testid="observer-div" />}
           </Grid>
         ) : (
           ''
