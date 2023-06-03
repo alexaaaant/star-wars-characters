@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { TextField } from '@mui/material';
+import { Card, CardContent, Grid, TextField, Typography } from '@mui/material';
 import { Character } from '../types/characters';
 import { useDebounce } from '../common/hooks/useDebounce';
 
@@ -38,13 +38,21 @@ export function CharactersList() {
         value={searchQuery}
         onChange={handleSearchChange}
       />
-      <ul>
+      <Grid container={true} spacing={2}>
         {filteredCharacters.map((character) => (
-          <li key={character.name}>
-            <Link to={`/character/${character.name}`}>{character.name}</Link>
-          </li>
+          <Grid item={true} xs={12} sm={6} md={4} key={character.name}>
+            <Link to={`/character/${character.name}`} style={{ textDecoration: 'none' }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h5" component="h2">
+                    {character.name}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Link>
+          </Grid>
         ))}
-      </ul>
+      </Grid>
     </div>
   );
 }
