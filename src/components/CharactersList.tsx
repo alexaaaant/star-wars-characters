@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { TextField } from '@mui/material';
 import { Character } from '../types/characters';
+import { useDebounce } from '../common/hooks/useDebounce';
 
 export function CharactersList() {
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery);
 
   const fetchCharacters = async () => {
     try {
@@ -19,10 +23,23 @@ export function CharactersList() {
     fetchCharacters();
   },        []);
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const filteredCharacters = useMemo(() => characters.filter((character) =>
+    character.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+  ),                                 [characters, debouncedSearchQuery]);
+
   return (
     <div>
+      <TextField
+        label="Search"
+        value={searchQuery}
+        onChange={handleSearchChange}
+      />
       <ul>
-        {characters.map((character) => (
+        {filteredCharacters.map((character) => (
           <li key={character.name}>
             <Link to={`/character/${character.name}`}>{character.name}</Link>
           </li>
