@@ -86,7 +86,7 @@ export const CharactersList = observer(() => {
             Empty
           </Typography>
         )}
-        {isLoading && <CircularProgress sx={{ m: 2 }} />}
+        {isLoading && <CircularProgress data-testid="progress" sx={{ m: 2 }} />}
       </Grid>
     </Container>
   );
