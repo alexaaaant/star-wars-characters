@@ -26,6 +26,7 @@ class CharactersStore {
             getCharacters: action,
             loadNextPage: action,
             startSearch: action,
+            updateCharacter: action,
         });
     }
 
@@ -73,6 +74,15 @@ class CharactersStore {
             this.reqParams.page++;
             this.getCharacters();
         }
+    }
+
+    updateCharacter = (name: Character['name'], props: Partial<Character>) => {
+        const character = this.characters.get(name)!;
+        
+        Object.keys(props).forEach((key) => {
+            const typedKey = key as keyof  Character;
+            character[typedKey] = props[typedKey]!;
+        });
     }
 }
 

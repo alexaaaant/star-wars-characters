@@ -12,15 +12,16 @@ import { charactersStore } from '../stores/CharactersStore';
 import { CharacterCard } from './CharacterCard';
 
 export const CharactersList = observer(() => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const { characters, startSearch, loadNextPage, isLoading, reqParams } =
+    charactersStore;
+  const [searchQuery, setSearchQuery] = useState(reqParams.search);
   const debouncedSearchQuery = useDebounce(searchQuery);
   const observerComp = useRef<IntersectionObserver | null>(null);
   const initial = useRef(true);
-  const { characters, startSearch, loadNextPage, isLoading } =
-    charactersStore;
 
   useEffect(() => {
     if (initial.current && characters.size) {
+      initial.current = false;
       return;
     }
     initial.current = false;

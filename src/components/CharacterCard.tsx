@@ -25,6 +25,9 @@ export const CharacterCard: React.FC<CharacterCardProps> = observer(
                   <Typography variant="h5" component="h2">
                     {character.name}
                   </Typography>
+                  <Typography variant="subtitle1" >
+                    {character.birth_year}
+                  </Typography>
                 </CardContent>
               </Card>
             </Link>
